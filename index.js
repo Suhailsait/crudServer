@@ -9,6 +9,16 @@ const cors = require('cors')
 // app.use(bodyParser.json())
 // app.use(bodyParser.urlencoded({extended:true}))
 
+app.use(cors({
+    origin:'http://localhost:4200'
+
+}));
+
+const appMiddleware = (req, res, next) => {
+    console.log("Application specific middleware");
+    next()
+}
+app.use(appMiddleware)
 
 mongoose.set('strictQuery', true);
 
@@ -27,10 +37,6 @@ app.listen(3000,()=>{
     console.log('Server running on 3000');
 })
 
-    app.use(cors({
-        origin:'http://localhost:4200'
-    
-    }));
 
 
     

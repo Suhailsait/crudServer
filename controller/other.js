@@ -44,6 +44,7 @@ const sentMail = async (name, email, text, instruction, link) => {
       }
   
       let transporter = nodemailer.createTransport(config)
+      
       let mailGenerator = new mailgen({
         theme: "default",
         product: {
