@@ -8,7 +8,7 @@ const auth = require("../middleware/auth")
 
 router.post('/signup',user_control.signup)
 
-router.get('/verify-user',user_control.verifyUser)
+router.post('/verify-user',user_control.verifyUser)
 
 router.post('/login',user_control.login)
 

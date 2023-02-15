@@ -158,7 +158,8 @@ const passwordForget = async (req, res) => {
 //_______________________________________________________________________________________________
 const passwordReset = async (req, res) => {
   try {
-    const token = req.body.token
+    console.log(req.body)
+    const token = req.query.token
     const password = req.body.password
     const newPassword = await Other.securePassword(password)
     const userData = await User.findOneAndUpdate({ useToken:token }, {
