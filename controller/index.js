@@ -14,7 +14,7 @@ const signup = async (req, res) => {
     const spassword = await Other.securePassword(password)
     const userData = await User.findOne({ email })
     if (userData) {
-      res.status(402).send({ condition: false, message: "Already registered User...Please Log In" })
+      res.status(402).json({  message: "Already registered User...Please Log In" })
     } else {
       const user = new User({
         username: username,
@@ -27,12 +27,12 @@ const signup = async (req, res) => {
       const data = await User.findOneAndUpdate({ email }, { $set: { useToken: randomString } })
       const text = 'Verify Your Account'
       const instruction = 'To verify your account, please click here:'
-      const link = `http://localhost:3000/verify-user?useToken=${randomString}`
+      const link = `http://localhost:4200/verify?useToken=${randomString}`
       await Other.sentMail(data.username, data.email, text, instruction, link)
-      res.status(202).send({ condition: true, message: "Open the Email and Verify"})
+      res.status(202).json({ message: "Open the Email and Verify"})
     }
   } catch (error) {
-    res.status(404).send({ condition: false, message: error.message })
+    res.status(404).send(error.message)
   }
 }
 //_______________________________________________________________________________________________
@@ -40,20 +40,20 @@ const signup = async (req, res) => {
 //_______________________________________________________________________________________________
 const verifyUser = async (req, res) => {
   try {
-    const token = req.query.useToken
+    const token = req.query.token
     const userData = await User.findOneAndUpdate({ token }, {
       $set: {
         verified: true,
-        token: ""
+        useToken: ""
       }
     }, { new: true })
     if (userData) {
-      res.status(202).send({ condition: true, message: "Your Account has been verified", data: userData })
+      res.status(202).json({ message: "Your Account has been verified", data: userData })
     } else {
-      res.status(402).send({ condition: false, message: "The Link has been expired" })
+      res.status(402).json({ message: "The Link has been expired" })
     }
   } catch (error) {
-    res.status(404).send({ condition: false, message: error.message })
+    res.status(404).send(error.message)
   }
 }
 //_______________________________________________________________________________________________
@@ -68,7 +68,7 @@ const login = async (req, res) => {
       const passwordmatch = await bcrypt.compare(password, userData.password)
       if (passwordmatch) {
         if (!userData.verified) {
-          res.status(402).send({ condition: false, message: "Please verify your Account on Email and Log In" })
+          res.status(402).json({message: "Please verify your Account on Email and Log In" })
         } else {
         const tokenData = await Other.create_token(userData._id)
         const userDetails = {
@@ -80,18 +80,18 @@ const login = async (req, res) => {
           token: tokenData
         }
         console.log(userDetails);
-        res.status(202).send({ condition: true, message: "Log In Successful", data: {userDetails,userData} })
+        res.status(202).json({ message: "Log In Successful", data: {userDetails,userData} })
       }
       }
       else {
-        res.status(402).send({ condition: false, message: "Incorrect Password" })
+        res.status(402).json({message: "Incorrect Password" })
       }
     } else {
-      res.status(402).send({ condition: false, message: "Incorrect Email" })
+      res.status(402).json({message: "Incorrect Email" })
     }
 
   } catch (error) {
-    res.status(404).send({ condition: false, message: error.message })
+    res.status(404).send(error.message)
   }
 }
 //____________________________________________________________________________________________
@@ -104,7 +104,7 @@ const passwordChange = async (req, res) => {
     if (data) {
       const passwordmatch = await bcrypt.compare(password, data.password)
       if (passwordmatch) {
-        res.status(400).send({ status: false, message: "Use different password" })
+        res.status(402).json({message: "Use different password" })
 
       } else {
 
@@ -114,16 +114,16 @@ const passwordChange = async (req, res) => {
             password: newPassword
           }
         })
-        res.status(200).send({ condition: true, message: "Password changed successfully", data: userData })
+        res.status(202).json({message: "Password changed successfully", data: userData })
       }
 
     } else {
-      res.status(400).send({ condition: false, message: "User not Found" })
+      res.status(402).json({message: "User not Found" })
     }
 
 
   } catch (error) {
-    res.status(404).send({ condition: false, message: error.message })
+    res.status(404).send(error.message)
   }
 }
 //____________________________________________________________________________________________
@@ -138,19 +138,19 @@ const passwordForget = async (req, res) => {
 
       const randomString = randomstring.generate()
       const data = await User.findOneAndUpdate({ email }, { $set: { useToken: randomString } })
-      const link = `http://localhost:3000/reset-password?useToken=${randomString}`
+      const link = `http://localhost:4200/resetpassword?useToken=${randomString}`
       const text = 'Reset Your Password'
       const instruction = 'To reset your password, please click here:'
       await Other.sentMail(userData.username, userData.email, text, instruction, link)
-      res.status(200).send({ status: true, message: "Check your inbox", data: data })
+      res.status(202).json({message: "Check your inbox", data: data })
 
     } else {
-      res.status(400).send({ status: false, message: "User not Found" })
+      res.status(402).json({message: "User not Found" })
 
     }
 
   } catch (error) {
-    res.status(404).send({ status: false, message: error.message })
+    res.status(404).send(error.message)
   }
 }
 //_______________________________________________________________________________________________
@@ -158,25 +158,25 @@ const passwordForget = async (req, res) => {
 //_______________________________________________________________________________________________
 const passwordReset = async (req, res) => {
   try {
-    const token = req.query.useToken
+    const token = req.body.token
     const password = req.body.password
     const newPassword = await Other.securePassword(password)
-    const userData = await User.findOneAndUpdate({ token }, {
+    const userData = await User.findOneAndUpdate({ useToken:token }, {
       $set: {
         password: newPassword,
-        token: ""
+        useToken: ""
       }
     }, { new: true })   
-     if (userData) {
+     if (userData.useToken=="") {
       
-      res.status(202).send({ success: true, message: "Password has been reseted", data: userData })
+      res.status(202).json({message: "Password has been reseted", data: userData })
 
     } else {
-      res.status(402).send({ success: false, message: "The Link has been expired" })
+      res.status(402).json({message: "The Link has been expired" })
     }
 
   } catch (error) {
-    res.status(404).send({ status: false, message: error.message })
+    res.status(404).send(error.message )
   }
 
 }

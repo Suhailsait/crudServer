@@ -14,11 +14,7 @@ app.use(cors({
 
 }));
 
-const appMiddleware = (req, res, next) => {
-    console.log("Application specific middleware");
-    next()
-}
-app.use(appMiddleware)
+app.use(express.json())
 
 mongoose.set('strictQuery', true);
 
@@ -29,7 +25,6 @@ mongoose.connect(process.env.MONGODB, {
 .catch((err) => console.log("error connecting to mongodb", err));
 
 
-app.use(express.json())
 
 app.use('/',userRouter)
 

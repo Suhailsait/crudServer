@@ -16,7 +16,7 @@ router.post('/change-password',auth,user_control.passwordChange)
 
 router.post('/forget-password',user_control.passwordForget)
 
-router.get('/reset-password',user_control.passwordReset)
+router.post('/reset-password',user_control.passwordReset)
 
 // const accountSid = "ACfb7c49ff9fdc4016ba26be9a66fc67e5";
 // const authToken = "23fb438a07d7d26dd7e0a0328f0b4bca";
