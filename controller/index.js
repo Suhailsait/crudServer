@@ -2,6 +2,8 @@ const Other = require("./other")
 const User = require('../models/user')
 const bcrypt = require("bcrypt")
 const randomstring = require("randomstring")
+const { log } = require("npmlog")
+const { data } = require("cheerio/lib/api/attributes")
 
 
 //_______________________________________________________________________________________________
@@ -57,15 +59,19 @@ const verifyUser = async (req, res) => {
     const id=req.query.id
     const otp= req.body.otp
     const userData = await User.findOne({ _id:id })
+    console.log(userData);
     if(userData){
       if (userData.otp==otp) {
-        await User.updateOne({
-           verified:true,
-           otp:"",
-           otpExpires:""
-         })
- 
+         userData = await User.findOneAndUpdate({ _id:id }, {
+          $set: {
+            verified:true,
+            otp:"",
+            otpExpires:""
+          }
+        })
+
        res.status(202).json({ message: "Your Account has been verified", data: userData })
+       console.log(userData);
      } else {
        res.status(402).json({ message: "Incorrect OTP" })
      }
